@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgeGuard Vision | NOC Dashboard</title>
+    <!-- Cache buster updated to v5 to guarantee fresh load -->
+    <link rel="stylesheet" href="styles.css?v=5">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-shield">🛡️</div>
+                <div class="brand-text">
+                    <h1>EDGEGUARD VISION</h1>
+                    <span class="badge blue">OpenCV 5</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item" data-target="view-overview">🏠 Overview</a>
+                <a href="#" class="nav-item active" data-target="view-workspace">📺 Video Inspection</a>
+                <a href="#" class="nav-item" data-target="view-trace">⛓️ Agent Trace</a>
+                <a href="#" class="nav-item" data-target="view-eval">🧪 Evaluation Lab</a>
+                <a href="#" class="nav-item" data-target="view-history">🕒 Inspection History</a>
+                <a href="#" class="nav-item" data-target="view-status">📉 System Status</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator"><div class="dot green"></div><span id="nav-system-status">System Online</span></div>
+                <div class="sub-text">Protecting Industrial Assets with AI</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="topbar">
+                <div class="header-titles">
+                    <div class="header-icon">🤖</div>
+                    <div>
+                        <h2 id="current-tab-title">Video Inspection</h2>
+                        <p class="breadcrumb">Adaptive visual analysis for industrial machinery</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <div class="cloud-status"><div class="dot green"></div> Local Mode</div>
+                    <div class="cloud-status"><div class="dot cyan"></div> API Connected</div>
+                    <div class="cloud-status">OpenCV <span id="topbar-cv-version">5.0.0</span></div>
+                    <div class="user-avatar">YV</div>
+                </div>
+            </header>
+
+            <!-- TAB 1: OVERVIEW -->
+            <main id="view-overview" class="workspace-view hidden">
+                <div class="page-title" style="justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div class="title-icon">⚇</div>
+                        <div><h2>Overview</h2><p>System summary and recent inspection activity</p></div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;" id="current-datetime">--</span>
+                        <button class="btn-outline" id="refresh-overview" style="width: auto; margin: 0; padding: 0.5rem 1rem;">↻ Refresh</button>
+                        <button class="btn-primary" style="padding: 0.5rem 1rem;" onclick="document.querySelector('[data-target=\'view-workspace\']').click()">▷ New Inspection</button>
+                    </div>
+                </div>
+
+                <!-- KPI Row -->
+                <div class="dashboard-grid-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="panel kpi-card">
+                        <div class="kpi-header"><span class="kpi-icon blue">📋</span> <span>Total Inspections</span></div>
+                        <div class="kpi-value"><h1 id="kpi-total">0</h1> <span class="kpi-trend green">↑ 12%</span></div>
+                        <p class="kpi-sub">vs. previous 7 days</p>
+                    </div>
+                    <div class="panel kpi-card">
+                        <div class="kpi-header"><span class="kpi-icon red">⚠️</span> <span>Abnormal Findings</span></div>
+                        <div class="kpi-value"><h1 id="kpi-anomalies" class="red-text">0</h1> <span class="kpi-trend red">↓ 3%</span></div>
+                        <p class="kpi-sub">vs. previous 7 days</p>
+                    </div>
+                    <div class="panel kpi-card">
+                        <div class="kpi-header"><span class="kpi-icon green">✓</span> <span>Stable Operations</span></div>
+                        <div class="kpi-value"><h1 id="kpi-stable" class="green-text">0</h1> <span class="kpi-trend green">↑ 20%</span></div>
+                        <p class="kpi-sub">vs. previous 7 days</p>
+                    </div>
+                    <div class="panel kpi-card">
+                        <div class="kpi-header"><span class="kpi-icon amber">⏱️</span> <span>Awaiting Review</span></div>
+                        <div class="kpi-value"><h1 id="kpi-uncertain" class="amber-text">0</h1> <span class="kpi-trend muted">--</span></div>
+                        <p class="kpi-sub">requires human review</p>
+                    </div>
+                </div>
+
+                <!-- Main Overview Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 1rem;">
+                    
+                    <!-- Left Col -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="panel" style="flex: 1;">
+                            <div class="panel-header">Inspection Outcomes</div>
+                            <div class="donut-container" style="display: flex; gap: 1.5rem; align-items: center; margin-top: 1rem;">
+                                <div id="outcome-donut" class="donut-chart">
+                                    <div class="donut-inner"><h2 id="donut-total">0</h2><span>Total</span></div>
+                                </div>
+                                <div class="donut-legend" style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                                    <div style="display: flex; justify-content: space-between; gap: 1rem;"><span><span class="dot green"></span> Stable Operations</span> <span id="leg-stable">0</span></div>
+                                    <div style="display: flex; justify-content: space-between; gap: 1rem;"><span><span class="dot red"></span> Anomalies Detected</span> <span id="leg-anomalies">0</span></div>
+                                    <div style="display: flex; justify-content: space-between; gap: 1rem;"><span><span class="dot amber"></span> Uncertain / Review</span> <span id="leg-uncertain">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel" style="flex: 1;">
+                            <div class="panel-header">System Health <span class="badge green" style="float: right;">All systems operational</span></div>
+                            <table class="status-table" style="width: 100%; font-size: 0.8rem; margin-top: 1rem;">
+                                <tr><td><span class="icon">☁️</span> Backend API</td><td><span class="dot green"></span> Connected</td><td style="text-align: right; color: var(--text-muted);">99.8% uptime</td></tr>
+                                <tr><td><span class="icon">👁️</span> OpenCV 5</td><td><span class="dot cyan"></span> <span id="status-overview-cv">5.0.0</span></td><td style="text-align: right; color: var(--text-muted);">Available</td></tr>
+                                <tr><td><span class="icon">💾</span> Database (SQLite)</td><td><span class="dot green"></span> Healthy</td><td style="text-align: right; color: var(--text-muted);">Local</td></tr>
+                                <tr><td><span class="icon">🌐</span> AWS Integration</td><td><span class="dot dark"></span> Not Configured</td><td style="text-align: right; color: var(--text-muted);">Pending</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Center Col -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="panel">
+                            <div class="panel-header">Recent Inspections <a href="#" onclick="document.querySelector('[data-target=\'view-history\']').click()" style="float:right; font-size:0.75rem; color:var(--blue); text-decoration:none;">View All</a></div>
+                            <table class="history-table" style="margin-top: 0.5rem;">
+                                <thead><tr><th>ID</th><th>Time</th><th>File</th><th>Result</th><th>Passes</th></tr></thead>
+                                <tbody id="overview-recent-tbody">
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No recent inspections found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="panel" style="flex: 1;">
+                            <div class="panel-header">Outcome Distribution (Last 7 Days)</div>
+                            <div class="canvas-wrapper" style="height: 140px;"><canvas id="barChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Col -->
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="panel">
+                            <div class="panel-header">Latest Analysis</div>
+                            <div style="background: #000; height: 120px; border-radius: 4px; margin: 1rem 0; position: relative; border: 1px solid #1e2d4a; display: flex; align-items: center; justify-content: center;">
+                                <span style="color: var(--text-muted); font-size: 0.75rem;">Run a scan to generate preview</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between;">
+                                <strong id="latest-id" style="color: var(--text-main);">--</strong>
+                                <span id="latest-time">--</span>
+                            </div>
+                            <p id="latest-file" style="font-size: 0.8rem; margin: 0.5rem 0;">--</p>
+                            <button class="btn-outline" style="font-size: 0.75rem; padding: 0.4rem;">View Details →</button>
+                        </div>
+                        <div class="panel" style="flex: 1;">
+                            <div class="panel-header">Quick Actions</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem;">
+                                <button class="action-card" onclick="document.querySelector('[data-target=\'view-workspace\']').click()"><strong>▶ Start Scan</strong><span>Run new analysis</span></button>
+                                <button class="action-card" onclick="document.querySelector('[data-target=\'view-eval\']').click()"><strong>🧪 Eval Lab</strong><span>Run test fixtures</span></button>
+                                <button class="action-card" onclick="document.querySelector('[data-target=\'view-history\']').click()"><strong>🕒 History</strong><span>Past reports</span></button>
+                                <button class="action-card" onclick="document.querySelector('[data-target=\'view-status\']').click()"><strong>📉 Status</strong><span>System health</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- TAB 2: VIDEO INSPECTION (Core) -->
+            <main id="view-workspace" class="workspace-view active-view">
+                <!-- Upload Controls -->
+                <div class="upload-grid">
+                    <form id="upload-form" class="upload-box primary">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">
+                            <strong>Drag & drop a video file here or Choose File</strong>
+                            <span id="filename-display">No file selected</span>
+                        </div>
+                        <input type="file" id="video-file" accept=".mp4,.avi,.mov" required>
+                    </form>
+                    <div class="upload-box secondary disabled">
+                        <div class="upload-icon">🔗</div>
+                        <div class="upload-text"><strong>Reference Video (optional)</strong><span>Choose File</span></div>
+                    </div>
+                    <div class="upload-box secondary disabled">
+                        <div class="upload-text"><strong>Demo Scenario ⓘ</strong><span>Select scenario</span></div>
+                    </div>
+                    <button id="analyze-btn" class="btn-primary" disabled>▶ Start Agentic Scan</button>
+                </div>
+
+                <div id="loading-overlay" class="loading-state hidden">
+                    <div class="spinner"></div><h3>Analyzing visual evidence...</h3>
+                </div>
+
+                <div id="results-dashboard" class="workspace-grid-3 hidden">
+                    <!-- Col 1: Video Evidence -->
+                    <div class="panel video-panel">
+                        <div class="panel-header"><span>👁️ Video Evidence</span></div>
+                        <div class="video-container" id="video-container">
+                            <video id="result-video" loop muted autoplay></video>
+                            <div id="roi-box" class="roi-overlay hidden"><span class="roi-label">ROI (1)</span></div>
+                        </div>
+                        <div class="video-meta">
+                            <div class="meta-item"><span>Resolution</span><strong>640 x 480</strong></div>
+                            <div class="meta-item"><span>FPS</span><strong>30.00</strong></div>
+                            <div class="meta-item"><span>Status</span><strong class="cyan-text">Analyzed</strong></div>
+                        </div>
+                        <div class="video-thumbnails">
+                            <div class="thumb active">Original</div>
+                            <div class="thumb">Coarse Scan</div>
+                            <div class="thumb hidden" id="thumb-detailed">Detailed Scan</div>
+                        </div>
+                    </div>
+
+                    <!-- Col 2: Motion Analysis -->
+                    <div class="panel chart-panel">
+                        <div class="panel-header"><span>📈 Motion Analysis</span><div class="legend"><span class="line cyan"></span> Current Video</div></div>
+                        <div class="canvas-wrapper"><canvas id="motionChart"></canvas></div>
+                        <div class="detailed-metrics">
+                            <div class="metric-sm"><span>Motion Variance</span><h3 id="motion-variance">--</h3></div>
+                            <div class="metric-sm"><span>Avg. Motion</span><h3 id="motion-avg">--</h3></div>
+                        </div>
+                    </div>
+
+                    <!-- Col 3: Inspection Result -->
+                    <div class="panel result-panel">
+                        <div class="panel-header"><span>📋 Inspection Result</span><span id="final-status-badge" class="badge">--</span></div>
+                        <div class="result-hero" id="result-hero">
+                            <h2 id="result-title">--</h2>
+                            <p id="result-desc">--</p>
+                        </div>
+                        
+                        <div class="metrics-grid-3">
+                            <div class="metric-box"><span>Scans Performed</span><h3 id="scan-count">--</h3></div>
+                            <div class="metric-box"><span>Confidence</span><h3 id="confidence-val">--</h3></div>
+                            <div class="metric-box"><span>Processing Time</span><h3 id="proc-time">00:00</h3></div>
+                        </div>
+
+                        <div class="recommendation-box">
+                            <div class="rec-icon">➔</div>
+                            <div>
+                                <strong>Recommendation</strong>
+                                <p id="recommendation-text">--</p>
+                            </div>
+                        </div>
+                        <button class="btn-outline">👁️ View Evidence</button>
+                    </div>
+
+                    <!-- Full Width Agent Trace -->
+                    <div class="panel trace-panel full-width">
+                        <div class="panel-header">
+                            <div>
+                                <span class="icon">⛓️</span> Agent Decision Trace
+                                <p class="sub">Step-by-step analysis of the agent's perception, decision and action process</p>
+                            </div>
+                        </div>
+                        <table class="trace-table">
+                            <thead>
+                                <tr><th>#</th><th>Timestamp</th><th>Operation</th><th>Measurements / Parameters</th><th>Decision Reason</th><th>Result</th><th>Next Action</th></tr>
+                            </thead>
+                            <tbody id="trace-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- TAB 3: AGENT TRACE (Global) -->
+            <main id="view-trace" class="workspace-view hidden">
+                <div class="panel">
+                    <div class="panel-header">Global Trace Log</div>
+                    <p style="color:var(--text-muted); margin-bottom: 1rem;">Detailed log of the most recent inspection.</p>
+                    <table class="trace-table">
+                        <thead>
+                            <tr><th>#</th><th>Timestamp</th><th>Operation</th><th>Measurements / Parameters</th><th>Decision Reason</th><th>Result</th><th>Next Action</th></tr>
+                        </thead>
+                        <tbody id="global-trace-tbody">
+                            <tr><td colspan="7" style="text-align:center;">Run an inspection to populate this log.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- TAB 4: EVALUATION LAB -->
+            <main id="view-eval" class="workspace-view hidden">
+                <div class="panel">
+                    <div class="panel-header">Synthetic Benchmarks</div>
+                    <button id="run-eval-btn" class="btn-primary" style="width: auto; padding: 0.5rem 1rem;">Run Evaluation Suite</button>
+                    <table class="history-table" style="margin-top: 1rem;">
+                        <thead><tr><th>Fixture</th><th>Status</th><th>Scans Triggered</th><th>Variance</th></tr></thead>
+                        <tbody id="eval-tbody"></tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- TAB 5: INSPECTION HISTORY -->
+            <main id="view-history" class="workspace-view hidden">
+                <div class="panel">
+                    <table class="history-table">
+                        <thead><tr><th>Time</th><th>File</th><th>Status</th><th>Scans</th><th>Variance</th></tr></thead>
+                        <tbody id="history-tbody"></tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- TAB 6: SYSTEM STATUS -->
+            <main id="view-status" class="workspace-view hidden">
+                <div class="dashboard-grid-3">
+                    <div class="panel"><div class="panel-header">Backend API</div><p class="green-text status-val">Connected</p></div>
+                    <div class="panel"><div class="panel-header">OpenCV Engine</div><p id="status-cv-full" class="cyan-text status-val">--</p></div>
+                    <div class="panel"><div class="panel-header">Storage Layer</div><p class="cyan-text status-val">SQLite (Local)</p></div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="app.js?v=5"></script>
+</body>
+</html>
